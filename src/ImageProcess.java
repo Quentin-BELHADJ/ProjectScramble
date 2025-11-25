@@ -1,5 +1,7 @@
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import java.util.List;
+import org.opencv.imgcodecs.Imgcodecs;
+
 
 /**
 
@@ -13,27 +15,28 @@ import java.util.List;
 
  Date : 24/11/2025
 
- Description : Cette classe se concentre sur le chiffrement et déchiffrement (avec ou sans clé) d'image unique pour permettre à la classe VideoScramblerController de chiffrer/déchiffrer les frames vidéo en temps réel.
+ Description : Cette classe se concentre sur le chiffrement et déchiffrement (avec ou sans clé) d'image unique.
 
  */
 
 
 
-public class ImageProccess {
-
+public class ImageProcess {
+    static {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
     /**
      * Chiffrer une image avec une clé symmétrique r,s ((r + (2s+1)idLigne)%size)
      * r est un décalage (offset) codé sur 8 bits
      * s est un pas (step) codé sur 7 bits
      *
      * @param srcImage
-     * @param RSList   tuple (r,s)
+     * @param r est un décalage (offset) codé sur 8 bits
+     * @param s est un pas (step) codé sur 7 bits
      * @return Mat image chiffrée
      */
-    public static Mat scrambleImage(Mat srcImage, List<int[]> RSList) {
+    public static Mat scrambleImage(Mat srcImage, int r, int s) {
         int start = 0;
-        int r = RSList.get(0)[0];
-        int s = RSList.get(0)[1];
         int height = srcImage.height();
         Mat scrambledImage = new Mat(srcImage.rows(), srcImage.cols(), srcImage.type());
         while (start < height) {
@@ -47,23 +50,19 @@ public class ImageProccess {
             }
             start += blockSize;
         }
-        scrambledImage = Watermark.addWatermark(scrambledImage, "scrambled");
         return scrambledImage;
     }
 
     /**
      * Déchiffrer une image avec une clé symmétrique r,s ((r + (2s+1)idLigne)%size)
-     * r est un décalage (offset) codé sur 8 bits
-     * s est un pas (step) codé sur 7 bits
      *
-     * @param SrcImage
-     * @param RSList   tuple (r,s)
+     * @param SrcImage image chiffrée
+     * @param r est un décalage (offset) codé sur 8 bits
+     * @param s est un pas (step) codé sur 7 bits
      * @return Mat image déchiffrée
      */
-    public static Mat unscrambleImage(Mat SrcImage, List<int[]> RSList) {
+    public static Mat unscrambleImage(Mat SrcImage, int r, int s) {
         int start = 0;
-        int r = RSList.get(0)[0];
-        int s = RSList.get(0)[1];
         int height = SrcImage.height();
         Mat unscrambledImage = new Mat(SrcImage.rows(), SrcImage.cols(), SrcImage.type());
 
@@ -97,7 +96,18 @@ public class ImageProccess {
             }
             start += blockSize;
         }
-        unscrambledImage = Watermark.addWatermark(unscrambledImage, "unscrambled");
         return unscrambledImage;
     }
+
+    public static void main(String[] args) {
+        Mat img = Imgcodecs.imread("D:\\User\\Documents\\Github\\ProjectScramble\\medias\\test.png");
+        Mat scrambled = scrambleImage(img, 3, 104);
+        Imgcodecs.imwrite("scrambled_image.png", scrambled);
+        Mat image = Imgcodecs.imread("scrambled_image.png");
+        Mat unscrambled = unscrambleImage(image,3 , 104);
+        Mat check = unscrambleImage(scrambled, 3, 104);
+        Imgcodecs.imwrite("check_image.png", check);
+        Imgcodecs.imwrite("loaded_unscrambled_image.png", unscrambled);
+    }
+
 }

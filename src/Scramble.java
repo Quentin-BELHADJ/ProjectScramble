@@ -14,12 +14,8 @@
  */
 
 import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +24,6 @@ public class Scramble {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
-
     public static void main(String[] args) {
         // Le nombre minimum d'arguments est 2 pour le mode 3 (scramble 3 <input file>)
         if (args.length < 2) {
@@ -82,44 +77,11 @@ public class Scramble {
                         return;
                     }
 
-                    if (inputFile.endsWith(".mp4")) {
-                        // todo video (chiffrement/déchiffrement)
-                        System.out.println("Video processing in mode " + modeStr + " not yet implemented.");
+                    if (inputFile.endsWith(".mp4") || inputFile.endsWith(".avi") || inputFile.endsWith(".mov") || inputFile.endsWith(".m4v") ) {
+                        VideoHandler.handleVideo(inputFile, RSList);
                     } else {
                         //long startTime = System.nanoTime();
-                        Mat srcImg = Imgcodecs.imread(inputFile);
-                        if (srcImg.empty()) {
-                            System.err.println("Erreur: Impossible de charger l'image depuis : " + inputFile);
-                            return;
-                        }
-                        ImageProccess img = new ImageProccess();
-                        Mat scbImg;
-                        Mat restImg;
-
-                        // Utiliser la première clé de la liste (que ce soit une seule clé ou un fichier)
-                        int r = RSList.get(0)[0];
-                        int s = RSList.get(0)[1];
-
-                        Path inputPath = Paths.get(inputFile);
-                        String originalFilename = inputPath.getFileName().toString();
-                        String outputFilenamePrefix;
-                        scbImg = img.scrambleImage(srcImg, RSList);
-                        outputFilenamePrefix = "scrambled_";
-                        System.out.println("Image scrambled with key (" + r + ", " + s + ")");
-                        String newFilename = outputFilenamePrefix + originalFilename;
-                        Path outputDir = inputPath.getParent();
-                        Path outputPath = (outputDir != null) ? outputDir.resolve(newFilename) : Paths.get(newFilename);
-                        Imgcodecs.imwrite(outputPath.toString(), scbImg);
-                        System.out.println("Résultat sauvegardé dans : " + outputPath.toString());
-                        restImg = img.unscrambleImage(scbImg, RSList);
-                        outputFilenamePrefix = "unscrambled_";
-                        System.out.println("Image unscrambling with known key (" + r + ", " + s + ")");
-                        newFilename = outputFilenamePrefix + originalFilename;
-                        outputDir = inputPath.getParent();
-                        outputPath = (outputDir != null) ? outputDir.resolve(newFilename) : Paths.get(newFilename);
-
-                        Imgcodecs.imwrite(outputPath.toString(), restImg);
-                        System.out.println("Résultat sauvegardé dans : " + outputPath.toString());
+                        ImageHandler.HandleImage(inputFile, RSList.get(0)[0], RSList.get(0)[1]);
                         //long stopTime = System.nanoTime();
                         //System.out.println(stopTime - startTime);
                         break;
