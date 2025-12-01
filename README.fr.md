@@ -21,8 +21,7 @@ Vidéo chiffrée :
 
 ---
 Vidéo déchiffrée :  
-![Decryption Demo](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/unscrambled_test.gif)
----
+![Encryption Demo](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/unscrambled_test.gif)
 
 ### Détails techniques & Retour d'expérience
 
