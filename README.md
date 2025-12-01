@@ -16,12 +16,12 @@ Java command-line (CLI) program designed for encrypting (visual scrambling) and 
 **Demo**
 The project in action:
 
-Cyphered video : 
+Cyphered video :  
 ![Encryption Demo](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/scrambled_test.gif)
 
 ---
 
-Decyphered video 
+Decyphered video :  
 ![Decryption Demo](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/unscrambled_test.gif)
 
 ---
