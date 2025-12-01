@@ -26,41 +26,61 @@ public class VideoHandler {
         double fps = srcVideo.get(Videoio.CAP_PROP_FPS);
         Size frameSize = new Size(frameWidth, frameHeight);
 
-        // Définir le codec sans perte (FFV1 est recommandé par le sujet)
-        // NOTE: Utiliser un .avi comme extension est souvent plus compatible avec FFV1
-        int fourcc = VideoWriter.fourcc('M', 'J', 'P', 'G');
+        // --- Sélection du codec et de l'extension (tentative FFV1 puis MJPG en fallback) ---
+        // NOTE: FFV1 est préféré (lossless) mais peut ne pas être disponible selon l'environnement OpenCV/FFmpeg.
+        // On essaie d'abord "FFV1" avec extension .mkv puis "MJPG" avec .avi.
+        String[] codecNames = { "FFV1", "MJPG" };
+        String[] extensions = { "mkv", "avi" };
 
-        // --- Construction des Chemins de Sortie ---
+        int chosenFourcc = 0;
+        String chosenExt = null;
+        String scrambledPathStr = null;
+        VideoWriter scrambledWriter = null;
+
+        // --- Construction de base du nom de fichier source ---
         Path inputPath = Paths.get(inputFile);
         String baseFilename = inputPath.getFileName().toString();
 
-        // Nom de sortie chiffré (ex: scrambled_input.avi)
-        String scrambledFilename = "scrambled_" + baseFilename.replaceFirst("[.][^.]+$", ".avi");
-        Path scrambledPath = inputPath.getParent() != null
-                ? inputPath.getParent().resolve(scrambledFilename)
-                : Paths.get(scrambledFilename);
-        String scrambledPathStr = scrambledPath.toString();
+        for (int i = 0; i < codecNames.length; i++) {
+            String codec = codecNames[i];
+            String ext = extensions[i];
 
-        // Nom de sortie déchiffré (ex: unscrambled_input.avi)
-        String unscrambledFilename = "unscrambled_" + baseFilename.replaceFirst("[.][^.]+$", ".avi");
-        Path unscrambledPath = inputPath.getParent() != null
-                ? inputPath.getParent().resolve(unscrambledFilename)
-                : Paths.get(unscrambledFilename);
-        String unscrambledPathStr = unscrambledPath.toString();
+            // Définit le fourcc à partir du nom du codec (4 caractères)
+            int fourcc = VideoWriter.fourcc(codec.charAt(0), codec.charAt(1), codec.charAt(2), codec.charAt(3));
 
-        System.out.println("Début du traitement vidéo...");
+            // Nom de sortie chiffré avec l'extension correspondant au codec testé
+            String scrambledFilename = "scrambled_" + baseFilename.replaceFirst("[.][^.]+$", "." + ext);
+            Path scrambledPath = inputPath.getParent() != null
+                    ? inputPath.getParent().resolve(scrambledFilename)
+                    : Paths.get(scrambledFilename);
+            String candidatePathStr = scrambledPath.toString();
+
+            // Essayer d'ouvrir le VideoWriter avec ce codec/extension
+            VideoWriter writer = new VideoWriter(candidatePathStr, fourcc, fps, frameSize);
+            if (writer.isOpened()) {
+                // Succès : retenir ce writer + info
+                scrambledWriter = writer;
+                chosenFourcc = fourcc;
+                chosenExt = ext;
+                scrambledPathStr = candidatePathStr;
+                break;
+            } else {
+                // Échec : libérer et essayer le suivant
+                writer.release();
+            }
+        }
+
+        if (scrambledWriter == null || !scrambledWriter.isOpened()) {
+            System.err.println("ERREUR: Impossible d'ouvrir le VideoWriter chiffré. Aucun codec disponible.");
+            srcVideo.release();
+            return;
+        }
+
+        System.out.println("Codec/extension choisis pour la vidéo chiffrée: " + (chosenExt != null ? chosenExt : "inconnu"));
 
         // =======================================================
         // --- 2. Chiffrement et Sauvegarde (Source -> Chiffrée) ---
         // =======================================================
-
-        VideoWriter scrambledWriter = new VideoWriter(scrambledPathStr, fourcc, fps, frameSize);
-
-        if (!scrambledWriter.isOpened()) {
-            System.err.println("ERREUR: Impossible d'ouvrir le VideoWriter chiffré. Codec ou extension invalide.");
-            srcVideo.release();
-            return;
-        }
 
         // Exécuter le chiffrement
         VideoProcess.ScrambleVideo(srcVideo, scrambledWriter, RSList);
@@ -82,7 +102,14 @@ public class VideoHandler {
             return;
         }
 
-        VideoWriter unscrambledWriter = new VideoWriter(unscrambledPathStr, fourcc, fps, frameSize);
+        // Construire le nom de sortie déchiffré en réutilisant l'extension choisie
+        String unscrambledFilename = "unscrambled_" + baseFilename.replaceFirst("[.][^.]+$", "." + (chosenExt != null ? chosenExt : "avi"));
+        Path unscrambledPath = inputPath.getParent() != null
+                ? inputPath.getParent().resolve(unscrambledFilename)
+                : Paths.get(unscrambledFilename);
+        String unscrambledPathStr = unscrambledPath.toString();
+
+        VideoWriter unscrambledWriter = new VideoWriter(unscrambledPathStr, chosenFourcc, fps, frameSize);
 
         if (!unscrambledWriter.isOpened()) {
             System.err.println("ERREUR: Impossible d'ouvrir le VideoWriter déchiffré.");

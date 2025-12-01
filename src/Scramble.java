@@ -122,13 +122,13 @@ public class Scramble {
     public static void Usage() {
         System.out.println("Usage : java Scramble <mode> <input file> [options]");
         System.out.println("-----------------------------------------------------");
-        System.out.println("Mode 1: Scramble (Chiffrement - déchiffrement) [cite: 78]");
+        System.out.println("Mode 1: Scramble (Chiffrement - déchiffrement)");
         System.out.println("  1. java Scramble 1 <input file> <r> <s>");
         System.out.println("  2. java Scramble 1 <input file> <r and s list file>");
         System.out.println("     - <r and s list file> : Chemin vers un fichier contenant 'r,s' par ligne.");
         System.out.println("     (Pour une image, seule la première clé sera utilisée.)");
         System.out.println("-----------------------------------------------------");
-        System.out.println("Mode 2: Unscramble (Déchiffrement) par force brute [cite: 86, 90]");
+        System.out.println("Mode 2: Unscramble (Déchiffrement) par force brute");
         System.out.println("  java Scramble 3 <input file>");
     }
 }
