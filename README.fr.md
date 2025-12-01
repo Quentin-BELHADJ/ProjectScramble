@@ -15,10 +15,13 @@ Programme Java en ligne de commande (CLI) permettant le chiffrement (brouillage 
 
 **Démonstration**
 Le projet en action :
+---
+Vidéo chiffrée :  
+![Encryption Demo](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/scrambled_test.gif)
 
-![Démonstration du chiffrement](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/scrambled_test.gif)
-![Démonstration du déchiffrement](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/unscrambled_test.gif)
-
+---
+Vidéo déchiffrée :  
+![Decryption Demo](https://github.com/Quentin-BELHADJ/ProjectScramble/raw/main/medias/unscrambled_test.gif)
 ---
 
 ### Détails techniques & Retour d'expérience
